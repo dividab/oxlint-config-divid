@@ -256,6 +256,12 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
     // allowLocalMutation
     { code: "function f() { const x: string[] = []; }", options: [{ allowLocalMutation: true }] },
     { code: "function f() { const x: [string, number] = ['a', 1]; }", options: [{ allowLocalMutation: true }] },
+    // The real suite's own allowLocalMutation test only exercises array/tuple locals - covering
+    // the TSTypeReference (Array/Map/Set) and TSMappedType paths too, since they run through the
+    // same shared isIgnored() check but are otherwise untested under this option.
+    { code: "function f() { const x: Array<string> = []; }", options: [{ allowLocalMutation: true }] },
+    { code: "function f() { const x: Map<string, number> = new Map(); }", options: [{ allowLocalMutation: true }] },
+    { code: "function f() { const x: { [key in string]: number } = {}; }", options: [{ allowLocalMutation: true }] },
     // params/return types are not "local" even under allowLocalMutation
     // (see the invalid case below for the actual regression guard)
     {
@@ -288,10 +294,26 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
       code: "interface Foo { foo: number, bar: ReadonlyArray<string>, baz: () => string, qux: { [key: string]: string } }",
       options: [{ ignoreInterface: true }],
     },
+    // The real suite's own ignoreInterface test only has already-readonly array/tuple values, so
+    // it never actually exercises isInInterface being checked from the array/tuple/type-reference
+    // visitors (as opposed to the property visitor) - unlike the property-level check, this isn't
+    // inherited "for free" from a shared node type, since TSArrayType/TSTupleType/TSTypeReference
+    // are separate visitor functions.
+    {
+      code: "interface Foo { bar: Array<string>; baz: string[]; qux: [string, number]; }",
+      options: [{ ignoreInterface: true }],
+    },
 
     // ignoreClass
     {
       code: "class Klass { foo: number; private bar: number; static baz: number; private static qux: number; }",
+      options: [{ ignoreClass: true }],
+    },
+    // Same gap as ignoreInterface above: the real suite's own test only has plain (non-array/
+    // tuple/collection) field types, so it never exercises isInClass from the array/tuple/
+    // type-reference visitors.
+    {
+      code: "class Klass { foo: Array<string>; bar: string[]; baz: [string, number]; }",
       options: [{ ignoreClass: true }],
     },
     {
