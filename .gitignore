@@ -1,0 +1,10 @@
+# Dependency directory
+node_modules
+
+# Environment settings
+.env
+
+# Other
+.DS_Store
+thumbs.db
+*.log

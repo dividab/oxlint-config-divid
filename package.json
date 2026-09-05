@@ -1,0 +1,45 @@
+{
+  "name": "oxlint-config-divid",
+  "version": "0.1.0",
+  "description": "Oxlint sharable config using typescript with the programming style we use at Divid",
+  "main": "index.js",
+  "type": "module",
+  "files": [
+    "index.js"
+  ],
+  "author": "Divid AB",
+  "license": "MIT",
+  "packageManager": "pnpm@12.3.1",
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": "please-use-pnpm",
+    "yarn": "please-use-pnpm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dividab/oxlint-config-divid"
+  },
+  "bugs": {
+    "url": "https://github.com/dividab/oxlint-config-divid/issues"
+  },
+  "keywords": [
+    "oxlint",
+    "oxlintconfig",
+    "config",
+    "divid",
+    "javascript",
+    "typescript"
+  ],
+  "devDependencies": {
+    "oxlint": "^1.81.0",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.81.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "preversion": "pnpm test",
+    "postversion": "git push --tags && pnpm publish && git push && echo \"Successfully released version $npm_package_version!\""
+  }
+}
