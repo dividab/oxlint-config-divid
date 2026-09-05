@@ -299,6 +299,13 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
       options: [{ ignoreClass: "fieldsOnly" }],
     },
 
+    // ignorePattern matching the enclosing function's own name (not just a property/variable/
+    // type-alias name) - regression test for getIdentifierText only handling declarations with a
+    // `.key`/simple name lookup, and missing `.id` on function-like nodes (return types).
+    {
+      code: "function mutableFoo(): string[] { return []; }",
+      options: [{ ignorePattern: "^[mM]utable" }],
+    },
     // ignoreCollections
     { code: "type Foo = Array<string>;", options: [{ ignoreCollections: true }] },
     { code: "const foo: number[] = [];", options: [{ ignoreCollections: true }] },
@@ -482,6 +489,15 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
     {
       code: "const func = (x: { [key in string]: number }) => {}",
       output: "const func = (x: { readonly [key in string]: number }) => {}",
+      errors: [{ messageId: "propertyNotReadonly" }],
+    },
+    // Unlike array/tuple/type-reference/index-signature checks, ignorePattern can never exempt a
+    // mapped type - eslint-plugin-functional's own shouldIgnorePattern2 doesn't unwrap through
+    // TSMappedType to find an enclosing name, and a TSMappedType node has no name of its own.
+    {
+      code: "const func = (mutableFoo: { [key in string]: number }) => {}",
+      output: "const func = (mutableFoo: { readonly [key in string]: number }) => {}",
+      options: [{ ignorePattern: "^[mM]utable" }],
       errors: [{ messageId: "propertyNotReadonly" }],
     },
 
