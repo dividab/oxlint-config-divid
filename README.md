@@ -58,3 +58,12 @@ pnpm version patch
 pnpm version minor
 pnpm version major
 ```
+
+This runs the tests, bumps the version, commits and tags it, then pushes and publishes to npm.
+The npm account has 2FA enabled, so the automatic `pnpm publish` step in `postversion` will fail
+with a 404/EOTP error. If that happens, finish the release manually:
+
+```
+npm publish --otp=<code from your authenticator app>
+git push
+```
