@@ -17,11 +17,7 @@ beforeAll(async () => {
   // relative to the config file's own location, so the fixture needs its own node_modules.
   await mkdir(path.join(fixtureDir, "node_modules"));
   for (const entry of await readdir(path.join(rootDir, "..", "node_modules"))) {
-    await symlink(
-      path.join(rootDir, "..", "node_modules", entry),
-      path.join(fixtureDir, "node_modules", entry),
-      "dir"
-    );
+    await symlink(path.join(rootDir, "..", "node_modules", entry), path.join(fixtureDir, "node_modules", entry), "dir");
   }
   // The plugin's `jsPlugins` entry is a bare package specifier ("oxlint-config-divid/..."), the
   // same way a real consumer's node_modules would resolve it - so the fixture needs a
@@ -54,11 +50,7 @@ async function lint(filename, source) {
     // `-f json` keeps this parseable regardless of the human-readable summary banner oxlint
     // prints on some environments (e.g. it's suppressed when it detects it's running under an
     // AI agent, which made a plain-text empty-output check pass locally but fail in CI).
-    const { stdout } = await execFileAsync(
-      "npx",
-      ["oxlint", "-c", "oxlint.config.js", "-f", "json", filename],
-      { cwd: fixtureDir }
-    );
+    const { stdout } = await execFileAsync("npx", ["oxlint", "-c", "oxlint.config.js", "-f", "json", filename], { cwd: fixtureDir });
     return { exitCode: 0, output: stdout };
   } catch (error) {
     return { exitCode: error.code, output: error.stdout };

@@ -21,6 +21,7 @@ jobs:
       - name: install and test
         run: |
           pnpm install --frozen-lockfile
+          pnpm format:check
           pnpm test
         env:
           CI: true
