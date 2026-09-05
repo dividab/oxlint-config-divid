@@ -51,9 +51,14 @@ async function printConfig() {
 async function lint(filename, source) {
   await writeFile(path.join(fixtureDir, filename), source);
   try {
-    const { stdout } = await execFileAsync("npx", ["oxlint", "-c", "oxlint.config.js", filename], {
-      cwd: fixtureDir,
-    });
+    // `-f json` keeps this parseable regardless of the human-readable summary banner oxlint
+    // prints on some environments (e.g. it's suppressed when it detects it's running under an
+    // AI agent, which made a plain-text empty-output check pass locally but fail in CI).
+    const { stdout } = await execFileAsync(
+      "npx",
+      ["oxlint", "-c", "oxlint.config.js", "-f", "json", filename],
+      { cwd: fixtureDir }
+    );
     return { exitCode: 0, output: stdout };
   } catch (error) {
     return { exitCode: error.code, output: error.stdout };
@@ -115,7 +120,7 @@ describe("Validate oxlint config", () => {
       ].join("\n")
     );
 
-    expect(output).toBe("");
+    expect(JSON.parse(output).diagnostics).toEqual([]);
     expect(exitCode).toBe(0);
   });
 });
