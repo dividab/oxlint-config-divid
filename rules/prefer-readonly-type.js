@@ -13,9 +13,13 @@
  */
 const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
 
+// A function's params and return-type annotation are direct children of the function node too,
+// same as its body - so this only counts as "inside" when the climb passed through the body
+// specifically. Otherwise a top-level exported function's own parameter/return types would
+// wrongly count as "local".
 function isInsideFunction(node) {
-  for (let current = node.parent; current !== null && current !== undefined; current = current.parent) {
-    if (FUNCTION_TYPES.has(current.type)) {
+  for (let child = node, current = node.parent; current !== null && current !== undefined; child = current, current = current.parent) {
+    if (FUNCTION_TYPES.has(current.type) && current.body === child) {
       return true;
     }
   }
@@ -98,9 +102,7 @@ export default {
   },
   create(context) {
     const { ignoreInterface = false, allowLocalMutation = false, ignorePattern } = context.options[0] ?? {};
-    const patterns = (Array.isArray(ignorePattern) ? ignorePattern : ignorePattern ? [ignorePattern] : []).map(
-      (source) => new RegExp(source),
-    );
+    const patterns = (Array.isArray(ignorePattern) ? ignorePattern : ignorePattern ? [ignorePattern] : []).map((source) => new RegExp(source));
 
     function isIgnored(node) {
       return (allowLocalMutation && isInsideFunction(node)) || matchesIgnorePattern(node, patterns);

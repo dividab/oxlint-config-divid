@@ -32,10 +32,7 @@ tester.run("no-let", noLet, {
 });
 
 tester.run("no-classes", noClasses, {
-  valid: [
-    "function f() {}",
-    { code: "class MyError extends Error {}", options: [{ ignoreIdentifierPattern: "^.*Error$" }] },
-  ],
+  valid: ["function f() {}", { code: "class MyError extends Error {}", options: [{ ignoreIdentifierPattern: "^.*Error$" }] }],
   invalid: [
     { code: "class Foo {}", errors: [{ messageId: "noClass" }] },
     { code: "const Foo = class {};", errors: [{ messageId: "noClass" }] },
@@ -59,7 +56,7 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
     "type Foo = readonly string[];",
     "type Foo = ReadonlyArray<string>;",
     "type Foo = readonly [string, number];",
-    { code: "function f(x: string[]) {}", options: [{ allowLocalMutation: true }] },
+    { code: "function f() { const x: string[] = []; }", options: [{ allowLocalMutation: true }] },
     { code: "function f() { const x: [string, number] = ['a', 1]; }", options: [{ allowLocalMutation: true }] },
     { code: "interface Foo { mutableBar: string[]; }", options: [{ ignorePattern: "^[mM]utable" }] },
     { code: "type MutableFoo = string[];", options: [{ ignorePattern: "^[mM]utable" }] },
@@ -88,6 +85,15 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
     {
       code: "function f(x: string[]) {}",
       output: "function f(x: readonly string[]) {}",
+      errors: [{ messageId: "arrayNotReadonly" }],
+    },
+    // A parameter's own type isn't "inside" the function's body - only what's declared within
+    // the body is local. Regression test: a naive "any function ancestor" check would wrongly
+    // exempt this.
+    {
+      code: "function f(x: string[]) {}",
+      output: "function f(x: readonly string[]) {}",
+      options: [{ allowLocalMutation: true }],
       errors: [{ messageId: "arrayNotReadonly" }],
     },
     {
