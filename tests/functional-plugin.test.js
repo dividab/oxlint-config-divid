@@ -13,10 +13,21 @@ RuleTester.setDefaultConfig({ languageOptions: { parserOptions: { lang: "ts" } }
 const tester = new RuleTester();
 
 tester.run("no-let", noLet, {
-  valid: ["const x = 1;", { code: "for (let i = 0; i < 10; i++) {}", options: [{ ignoreForLoopInit: true }] }],
+  valid: [
+    "const x = 1;",
+    { code: "for (let i = 0; i < 10; i++) {}", options: [{ ignoreForLoopInit: true }] },
+    { code: "function f() { let x = 1; }", options: [{ allowInFunctions: true }] },
+    { code: "let mutableFoo = 1;", options: [{ ignoreIdentifierPattern: "^[mM]utable" }] },
+  ],
   invalid: [
     { code: "let x = 1;", errors: [{ messageId: "noLet" }] },
     { code: "for (let i = 0; i < 10; i++) {}", errors: [{ messageId: "noLet" }] },
+    { code: "let x = 1;", options: [{ allowInFunctions: true }], errors: [{ messageId: "noLet" }] },
+    {
+      code: "let x = 1;",
+      options: [{ ignoreIdentifierPattern: "^[mM]utable" }],
+      errors: [{ messageId: "noLet" }],
+    },
   ],
 });
 
