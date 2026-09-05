@@ -2,6 +2,10 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   plugins: ["typescript", "import", "unicorn", "oxc", "node"],
+  // Bundled JS plugin (see functional-plugin.js) porting the eslint-plugin-functional rules
+  // that translate to a syntax-only check and have no native oxlint equivalent: no-classes,
+  // no-let, no-this-expressions, prefer-readonly-type.
+  jsPlugins: ["oxlint-config-divid/functional-plugin.js"],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -241,5 +245,14 @@ export default defineConfig({
     "typescript/return-await": "error",
     "typescript/switch-exhaustiveness-check": "error",
     "typescript/unified-signatures": "error",
+    // Native equivalent of eslint-plugin-functional's prefer-property-signatures.
+    "typescript/method-signature-style": ["error", "property"],
+
+    // Ported from eslint-plugin-functional, see functional-plugin.js. No native oxlint
+    // equivalent exists for these (checked against `oxlint --rules --format json`).
+    "functional/no-classes": "error",
+    "functional/no-let": "error",
+    "functional/no-this-expressions": "error",
+    "functional/prefer-readonly-type": "error",
   },
 });

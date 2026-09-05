@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "files": [
-    "index.js"
+    "index.js",
+    "functional-plugin.js",
+    "rules"
   ],
   "author": "Divid AB",
   "license": "MIT",

@@ -4,10 +4,21 @@ This package contains an [oxlint](https://oxc.rs/docs/guide/usage/linter.html) s
 for use with typescript, following the programming style we use at [Divid](https://divid.se/).
 
 It is a starting point, not a port of [eslint-config-divid](https://github.com/dividab/eslint-config-divid):
-oxlint has its own native rule set and does not support third-party ESLint plugins, so rules from
-`eslint-plugin-functional` (no-mutations, no-statements, currying, ...) have no oxlint equivalent
-and are not included here. Expect the rule set in `index.js` to grow as we find native oxlint
-equivalents worth enabling.
+oxlint has its own native rule set, and most of `eslint-plugin-functional` (no-mutations,
+no-statements, currying, ...) has no oxlint equivalent and is not included here.
+
+oxlint does have an alpha [JS plugin API](https://oxc.rs/docs/guide/usage/linter/js-plugins.html)
+(ESLint v9-compatible rules), and this package uses it to bundle `functional-plugin.js`: a port of
+the `eslint-plugin-functional` rules that translate to a syntax-only check and have no native
+oxlint equivalent - `no-classes`, `no-let`, `no-this-expressions` and `prefer-readonly-type` -
+enabled by default as `functional/<rule-name>`. `prefer-property-signatures` is covered by the
+native `typescript/method-signature-style` instead (enabled directly in `index.js`), and class-field
+readonly-ness is left to the native, type-aware `typescript/prefer-readonly` rather than
+`prefer-readonly-type`'s JS-plugin port, which only checks interfaces/type-literals and array/tuple
+types - flagging every non-readonly class field without knowing whether it's reassigned elsewhere
+would produce unsound fixes. If a project only needs these rules from `eslint-plugin-functional`, it
+can be dropped once this config is in use. Expect the rule set in `index.js` to grow as we find more
+oxlint (native or JS-plugin) equivalents worth enabling.
 
 ## Usage
 

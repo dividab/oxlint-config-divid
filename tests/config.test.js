@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, writeFile, rm, symlink } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, writeFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,18 @@ beforeAll(async () => {
   fixtureDir = await mkdtemp(path.join(tmpdir(), "oxlint-config-divid-"));
   // oxlint.config.js does `import { defineConfig } from "oxlint"`, which Node resolves
   // relative to the config file's own location, so the fixture needs its own node_modules.
-  await symlink(path.join(rootDir, "..", "node_modules"), path.join(fixtureDir, "node_modules"), "dir");
+  await mkdir(path.join(fixtureDir, "node_modules"));
+  for (const entry of await readdir(path.join(rootDir, "..", "node_modules"))) {
+    await symlink(
+      path.join(rootDir, "..", "node_modules", entry),
+      path.join(fixtureDir, "node_modules", entry),
+      "dir"
+    );
+  }
+  // The plugin's `jsPlugins` entry is a bare package specifier ("oxlint-config-divid/..."), the
+  // same way a real consumer's node_modules would resolve it - so the fixture needs a
+  // self-reference too, since this package isn't (and shouldn't be) a dependency of itself.
+  await symlink(path.join(rootDir, ".."), path.join(fixtureDir, "node_modules", "oxlint-config-divid"), "dir");
   await writeFile(
     path.join(fixtureDir, "oxlint.config.js"),
     `import { defineConfig } from "oxlint";\nimport dividConfig from ${JSON.stringify(
@@ -59,6 +70,9 @@ describe("Validate oxlint config", () => {
     expect(config.rules["prefer-const"]).toBe("deny");
     expect(config.rules["typescript/no-explicit-any"]).toBe("deny");
     expect(config.rules["import/no-cycle"]).toBe("deny");
+    // `--print-config` doesn't enumerate jsPlugins-provided rules (e.g. `functional/no-let`) at
+    // all, even when the plugin loads and runs correctly - see the "flags violations" test below
+    // for the real end-to-end check of the bundled functional plugin.
   });
 
   it("flags violations of the ported rules", async () => {
@@ -84,6 +98,7 @@ describe("Validate oxlint config", () => {
     expect(output).toContain("typescript(no-explicit-any)"); // ported from typescript-eslint/all.js
     expect(output).toContain("eslint(no-eval)"); // ported from core/best-practices.js
     expect(output).toContain("eslint(no-void)"); // ported from core/best-practices.js
+    expect(output).toContain("functional(no-let)"); // ported from eslint-plugin-functional
   });
 
   it("does not flag idiomatic, rule-compliant TypeScript", async () => {
