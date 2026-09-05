@@ -42,8 +42,8 @@
   },
   "scripts": {
     "test": "vitest run",
-    "format": "oxfmt --write .",
-    "format:check": "oxfmt --check .",
+    "fmt": "oxfmt --write .",
+    "fmt:check": "oxfmt --check .",
     "preversion": "pnpm test",
     "postversion": "git push --tags && pnpm publish && git push && echo \"Successfully released version $npm_package_version!\""
   }

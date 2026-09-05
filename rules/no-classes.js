@@ -19,19 +19,31 @@ export default {
           ignoreIdentifierPattern: {
             oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }],
           },
+          // A regex source (or array of them) tested against the whole class declaration's
+          // source text - the fallback used for anonymous class expressions, which have no name
+          // to test ignoreIdentifierPattern against.
+          ignoreCodePattern: {
+            oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }],
+          },
         },
         additionalProperties: false,
       },
     ],
   },
   create(context) {
-    const { ignoreIdentifierPattern } = context.options[0] ?? {};
-    const patterns = (
+    const { ignoreIdentifierPattern, ignoreCodePattern } = context.options[0] ?? {};
+    const identifierPatterns = (
       Array.isArray(ignoreIdentifierPattern) ? ignoreIdentifierPattern : ignoreIdentifierPattern ? [ignoreIdentifierPattern] : []
     ).map((source) => new RegExp(source));
+    const codePatterns = (Array.isArray(ignoreCodePattern) ? ignoreCodePattern : ignoreCodePattern ? [ignoreCodePattern] : []).map(
+      (source) => new RegExp(source)
+    );
 
     function isIgnored(node) {
-      return node.id !== null && patterns.some((pattern) => pattern.test(node.id.name));
+      return (
+        (node.id !== null && identifierPatterns.some((pattern) => pattern.test(node.id.name))) ||
+        (codePatterns.length > 0 && codePatterns.some((pattern) => pattern.test(context.sourceCode.getText(node))))
+      );
     }
 
     function check(node) {

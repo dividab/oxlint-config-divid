@@ -2,16 +2,7 @@
  * Port of eslint-plugin-functional's `no-let`: disallow `let` declarations, prefer `const`.
  * `var` is intentionally left alone here - the core `no-var` rule already covers it.
  */
-const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
-
-function isInsideFunction(node) {
-  for (let current = node.parent; current !== null && current !== undefined; current = current.parent) {
-    if (FUNCTION_TYPES.has(current.type)) {
-      return true;
-    }
-  }
-  return false;
-}
+import { isInsideFunction } from "./_ast-utils.js";
 
 export default {
   meta: {
@@ -26,7 +17,8 @@ export default {
       {
         type: "object",
         properties: {
-          ignoreForLoopInit: { type: "boolean" },
+          // Named to match eslint-plugin-functional's own option name for this rule.
+          allowInForLoopInit: { type: "boolean" },
           allowInFunctions: { type: "boolean" },
           // A regex source (or array of them) tested against each declared identifier. A
           // matching declaration is allowed, e.g. "^[mM]utable" to permit `let mutableFoo`.
@@ -39,7 +31,7 @@ export default {
     ],
   },
   create(context) {
-    const { ignoreForLoopInit = false, allowInFunctions = false, ignoreIdentifierPattern } = context.options[0] ?? {};
+    const { allowInForLoopInit = false, allowInFunctions = false, ignoreIdentifierPattern } = context.options[0] ?? {};
     const patterns = (
       Array.isArray(ignoreIdentifierPattern) ? ignoreIdentifierPattern : ignoreIdentifierPattern ? [ignoreIdentifierPattern] : []
     ).map((source) => new RegExp(source));
@@ -49,7 +41,7 @@ export default {
         if (node.kind !== "let") {
           return;
         }
-        if (ignoreForLoopInit && node.parent.type === "ForStatement" && node.parent.init === node) {
+        if (allowInForLoopInit && node.parent.type === "ForStatement" && node.parent.init === node) {
           return;
         }
         if (allowInFunctions && isInsideFunction(node)) {
