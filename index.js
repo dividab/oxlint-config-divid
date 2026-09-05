@@ -14,6 +14,27 @@ export default defineConfig({
   // need to be turned on explicitly. Rules with no oxlint equivalent (checked against
   // `oxlint --rules --format json`) are left out, same as eslint-plugin-functional.
   rules: {
+    // oxlint's `categories` block above turns on every rule tagged correctness/suspicious,
+    // ignoring eslint-config-divid's per-rule intent for these - so they need to be turned
+    // back off explicitly here to match. Two groups:
+    // (a) rules eslint-config-divid disables because TypeScript's compiler already checks
+    // them (core/errors.js, core/es6.js) - safe to disable since consuming projects run tsc.
+    "getter-return": "off", // Checked by Typescript - ts(2378)
+    "no-dupe-keys": "off", // Checked by Typescript - ts(1117)
+    "no-unreachable": "off", // Checked by Typescript - ts(7027)
+    "valid-typeof": "off", // Checked by Typescript - ts(2367)
+    "no-const-assign": "off", // Checked by Typescript - ts(2588)
+    "no-this-before-super": "off", // Checked by Typescript - ts(2376)
+    // (b) rules eslint-config-divid disables in favor of a type-aware
+    // @typescript-eslint/* variant (typescript-eslint/all.js) - oxlint has no equivalent
+    // typescript-scoped rule for these, so - same as eslint-plugin-functional - they're
+    // left out rather than enforced via the type-unaware bare rule.
+    "no-dupe-class-members": "off", // No oxlint equivalent of @typescript-eslint/no-dupe-class-members
+    "no-shadow": "off", // No oxlint equivalent of @typescript-eslint/no-shadow
+    "no-unused-vars": "off", // No oxlint equivalent of @typescript-eslint/no-unused-vars
+    "no-useless-constructor": "off", // No oxlint equivalent of @typescript-eslint/no-useless-constructor
+    "no-empty-function": "off", // No oxlint equivalent of @typescript-eslint/no-empty-function
+
     // From eslint-config-divid's core/best-practices.js
     "array-callback-return": "error",
     "class-methods-use-this": "error",
@@ -25,7 +46,6 @@ export default defineConfig({
     "no-alert": "warn",
     "no-case-declarations": "error",
     "no-div-regex": "error",
-    "no-empty-function": "error",
     "no-extra-label": "error",
     "no-fallthrough": "error",
     "no-implicit-coercion": ["error", { boolean: false, number: false, string: true }], // !! is idiomatic JS
@@ -86,6 +106,9 @@ export default defineConfig({
     "one-var": ["error", "never"],
     "operator-assignment": ["error", "always"],
     "prefer-object-spread": "error",
+
+    // From eslint-config-divid's core/style.js
+    "no-underscore-dangle": "off", // Prefixing with underscore to signal private
 
     // From eslint-config-divid's core/variables.js
     "no-label-var": "error",
