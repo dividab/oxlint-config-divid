@@ -59,6 +59,10 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
     "type Foo = readonly string[];",
     "type Foo = ReadonlyArray<string>;",
     "type Foo = readonly [string, number];",
+    { code: "function f(x: string[]) {}", options: [{ allowLocalMutation: true }] },
+    { code: "function f() { const x: [string, number] = ['a', 1]; }", options: [{ allowLocalMutation: true }] },
+    { code: "interface Foo { mutableBar: string[]; }", options: [{ ignorePattern: "^[mM]utable" }] },
+    { code: "type MutableFoo = string[];", options: [{ ignorePattern: "^[mM]utable" }] },
   ],
   invalid: [
     {
@@ -80,6 +84,17 @@ tester.run("prefer-readonly-type", preferReadonlyType, {
       code: "type Foo = [string, number];",
       output: "type Foo = readonly [string, number];",
       errors: [{ messageId: "tupleNotReadonly" }],
+    },
+    {
+      code: "function f(x: string[]) {}",
+      output: "function f(x: readonly string[]) {}",
+      errors: [{ messageId: "arrayNotReadonly" }],
+    },
+    {
+      code: "interface Foo { bar: string; }",
+      output: "interface Foo { readonly bar: string; }",
+      options: [{ ignorePattern: "^[mM]utable" }],
+      errors: [{ messageId: "propertyNotReadonly" }],
     },
   ],
 });

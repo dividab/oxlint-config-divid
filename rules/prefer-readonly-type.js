@@ -11,12 +11,60 @@
  * syntax-only "flag every non-readonly field" check would produce unsound fixes (breaking fields
  * that are legitimately reassigned elsewhere in the class).
  */
+const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
+
+function isInsideFunction(node) {
+  for (let current = node.parent; current !== null && current !== undefined; current = current.parent) {
+    if (FUNCTION_TYPES.has(current.type)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isReadonlyWrapped(node) {
   return node.parent.type === "TSTypeOperator" && node.parent.operator === "readonly";
 }
 
 function isNestedArrayOrTuple(node) {
   return node.parent.type === "TSArrayType" || node.parent.type === "TSTupleType";
+}
+
+// Walk up past the type-only wrapper nodes surrounding an array/tuple/`Array<T>` type to find the
+// nearest node that actually carries a name - a property, variable, parameter or type alias -
+// mirroring eslint-plugin-functional's own unwrapping (`shouldIgnorePattern` for these node
+// kinds) before testing ignorePattern against it.
+const TYPE_WRAPPER_TYPES = new Set(["TSArrayType", "TSTupleType", "TSTypeAnnotation", "TSTypeReference"]);
+
+function getIdentifierName(node) {
+  let current = node;
+  while (current !== null && current !== undefined && TYPE_WRAPPER_TYPES.has(current.type)) {
+    current = current.parent;
+  }
+  if (current === null || current === undefined) {
+    return undefined;
+  }
+  switch (current.type) {
+    case "TSPropertySignature":
+    case "PropertyDefinition":
+    case "Property":
+      return current.key.type === "Identifier" ? current.key.name : undefined;
+    case "VariableDeclarator":
+    case "TSTypeAliasDeclaration":
+      return current.id.type === "Identifier" ? current.id.name : undefined;
+    case "Identifier":
+      return current.name;
+    default:
+      return undefined;
+  }
+}
+
+function matchesIgnorePattern(node, patterns) {
+  if (patterns.length === 0) {
+    return false;
+  }
+  const name = getIdentifierName(node);
+  return name !== undefined && patterns.some((pattern) => pattern.test(name));
 }
 
 export default {
@@ -36,13 +84,27 @@ export default {
         type: "object",
         properties: {
           ignoreInterface: { type: "boolean" },
+          allowLocalMutation: { type: "boolean" },
+          // A regex source (or array of them) tested against the nearest enclosing name (a
+          // property, variable, parameter or type alias identifier). A match is allowed, e.g.
+          // "^[mM]utable" to permit `mutableFoo: string[]`.
+          ignorePattern: {
+            oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }],
+          },
         },
         additionalProperties: false,
       },
     ],
   },
   create(context) {
-    const { ignoreInterface = false } = context.options[0] ?? {};
+    const { ignoreInterface = false, allowLocalMutation = false, ignorePattern } = context.options[0] ?? {};
+    const patterns = (Array.isArray(ignorePattern) ? ignorePattern : ignorePattern ? [ignorePattern] : []).map(
+      (source) => new RegExp(source),
+    );
+
+    function isIgnored(node) {
+      return (allowLocalMutation && isInsideFunction(node)) || matchesIgnorePattern(node, patterns);
+    }
 
     return {
       TSPropertySignature(node) {
@@ -50,6 +112,9 @@ export default {
           return;
         }
         if (ignoreInterface && node.parent.type === "TSInterfaceBody") {
+          return;
+        }
+        if (isIgnored(node)) {
           return;
         }
         context.report({
@@ -63,6 +128,9 @@ export default {
         if (isReadonlyWrapped(node) || isNestedArrayOrTuple(node)) {
           return;
         }
+        if (isIgnored(node)) {
+          return;
+        }
         context.report({
           node,
           messageId: "arrayNotReadonly",
@@ -74,6 +142,9 @@ export default {
         if (isReadonlyWrapped(node) || isNestedArrayOrTuple(node)) {
           return;
         }
+        if (isIgnored(node)) {
+          return;
+        }
         context.report({
           node,
           messageId: "tupleNotReadonly",
@@ -83,6 +154,9 @@ export default {
 
       TSTypeReference(node) {
         if (node.typeName.type !== "Identifier" || node.typeName.name !== "Array") {
+          return;
+        }
+        if (isIgnored(node)) {
           return;
         }
         context.report({
