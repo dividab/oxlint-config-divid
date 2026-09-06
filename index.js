@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["typescript", "import", "unicorn", "oxc", "node"],
+  plugins: ["typescript", "import", "unicorn", "oxc", "node", "react"],
   // Syntax-only ports of eslint-plugin-functional rules with no oxlint equivalent.
   jsPlugins: ["oxlint-config-divid/functional-plugin.js"],
   categories: {
@@ -241,5 +241,8 @@ export default defineConfig({
     "functional/no-let": ["error", { allowInFunctions: true, ignoreIdentifierPattern: "^[mM]utable" }],
     "functional/no-this-expressions": "error",
     "functional/prefer-readonly-type": ["error", { allowLocalMutation: true, ignorePattern: "^[mM]utable" }],
+
+    // react/* - not in the correctness/suspicious categories, so needs an explicit entry.
+    "react/no-array-index-key": "error",
   },
 });
