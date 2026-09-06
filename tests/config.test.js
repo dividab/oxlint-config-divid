@@ -101,14 +101,7 @@ describe("Validate oxlint config", () => {
   it("does not flag idiomatic, rule-compliant TypeScript", async () => {
     const { exitCode, output } = await lint(
       "clean.ts",
-      [
-        `export function add(a: number, b: number): number {`,
-        `  return a + b;`,
-        `}`,
-        ``,
-        `export const result = add(1, 2);`,
-        ``,
-      ].join("\n")
+      [`export function add(a: number, b: number): number {`, `  return a + b;`, `}`, ``, `export const result = add(1, 2);`, ``].join("\n")
     );
 
     expect(JSON.parse(output).diagnostics).toEqual([]);
