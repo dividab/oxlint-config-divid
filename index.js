@@ -2,9 +2,7 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   plugins: ["typescript", "import", "unicorn", "oxc", "node"],
-  // Bundled JS plugin (see functional-plugin.js) porting the eslint-plugin-functional rules
-  // that translate to a syntax-only check and have no native oxlint equivalent: no-classes,
-  // no-let, no-this-expressions, prefer-readonly-type.
+  // Syntax-only ports of eslint-plugin-functional rules with no oxlint equivalent.
   jsPlugins: ["oxlint-config-divid/functional-plugin.js"],
   categories: {
     correctness: "error",
@@ -13,38 +11,26 @@ export default defineConfig({
   env: {
     builtin: true,
   },
-  // Everything below is ported from eslint-config-divid's rule set (core, imports,
-  // typescript-eslint) for rules that fall outside the categories above and therefore
-  // need to be turned on explicitly. Rules with no oxlint equivalent (checked against
-  // `oxlint --rules --format json`) are left out, same as eslint-plugin-functional.
+  // Rules ported from eslint-config-divid that the categories above don't cover.
   rules: {
-    // oxlint's `categories` block above turns on every rule tagged correctness/suspicious,
-    // ignoring eslint-config-divid's per-rule intent for these - so they need to be turned
-    // back off explicitly here to match. Three groups:
-    // (a) rules eslint-config-divid disables because TypeScript's compiler already checks
-    // them unconditionally (core/errors.js, core/es6.js) - no tsconfig option required.
-    "getter-return": "off", // Checked by Typescript - ts(2378)
-    "no-dupe-keys": "off", // Checked by Typescript - ts(1117)
-    "valid-typeof": "off", // Checked by Typescript - ts(2367)
-    "no-const-assign": "off", // Checked by Typescript - ts(2588)
-    "no-this-before-super": "off", // Checked by Typescript - ts(2376)
-    "no-dupe-class-members": "off", // Checked by Typescript - ts(2393)/ts(2300)
-    // (b) rules eslint-config-divid disables because TypeScript's compiler checks them too,
-    // but only when the consuming project turns on the matching tsconfig compiler option
-    // (see README) - off here on the assumption that projects enable it.
-    "no-unreachable": "off", // Checked by Typescript - ts(7027) - requires "allowUnreachableCode": false
-    "no-unused-vars": "off", // Checked by Typescript - ts(6133)/ts(6196) - requires "noUnusedLocals"/"noUnusedParameters": true
-    "no-fallthrough": "off", // Checked by Typescript - ts(7029) - requires "noFallthroughCasesInSwitch": true
-    // (c) rules eslint-config-divid disables in favor of a type-aware
-    // @typescript-eslint/* variant (typescript-eslint/all.js) - oxlint has no equivalent
-    // typescript-scoped rule for these, and TypeScript's compiler has no check for them
-    // either, so - same as eslint-plugin-functional - they're left out rather than
-    // enforced via the type-unaware bare rule.
-    "no-shadow": "off", // No oxlint equivalent of @typescript-eslint/no-shadow
-    "no-useless-constructor": "off", // No oxlint equivalent of @typescript-eslint/no-useless-constructor
-    "no-empty-function": "off", // No oxlint equivalent of @typescript-eslint/no-empty-function
+    // Re-disabled below because `categories` turns these back on regardless of intent.
+    // (a) Checked by TypeScript unconditionally.
+    "getter-return": "off", // ts(2378)
+    "no-dupe-keys": "off", // ts(1117)
+    "valid-typeof": "off", // ts(2367)
+    "no-const-assign": "off", // ts(2588)
+    "no-this-before-super": "off", // ts(2376)
+    "no-dupe-class-members": "off", // ts(2393)/ts(2300)
+    // (b) Checked by TypeScript when the matching tsconfig option is enabled (see README).
+    "no-unreachable": "off", // needs allowUnreachableCode
+    "no-unused-vars": "off", // needs noUnusedLocals/noUnusedParameters
+    "no-fallthrough": "off", // needs noFallthroughCasesInSwitch
+    // (c) No oxlint equivalent of the type-aware @typescript-eslint/* variant.
+    "no-shadow": "off",
+    "no-useless-constructor": "off",
+    "no-empty-function": "off",
 
-    // From eslint-config-divid's core/best-practices.js
+    // core/best-practices.js
     "array-callback-return": "error",
     "class-methods-use-this": "error",
     curly: ["error", "all"],
@@ -56,7 +42,7 @@ export default defineConfig({
     "no-case-declarations": "error",
     "no-div-regex": "error",
     "no-extra-label": "error",
-    "no-implicit-coercion": ["error", { boolean: false, number: false, string: true }], // !! is idiomatic JS
+    "no-implicit-coercion": ["error", { boolean: false, number: false, string: true }], // !! stays allowed
     "no-implicit-globals": "error",
     "no-labels": ["error", { allowLoop: false, allowSwitch: false }],
     "no-lone-blocks": "error",
@@ -89,7 +75,7 @@ export default defineConfig({
     "vars-on-top": "error",
     yoda: "error",
 
-    // From eslint-config-divid's core/errors.js
+    // core/errors.js
     "no-constant-condition": "warn",
     "no-empty": "error",
     "no-inner-declarations": "error",
@@ -98,7 +84,7 @@ export default defineConfig({
     "no-template-curly-in-string": "error",
     "no-console": "error",
 
-    // From eslint-config-divid's core/es6.js
+    // core/es6.js
     "no-useless-computed-key": "error",
     "no-var": "error",
     "prefer-const": "error",
@@ -107,7 +93,7 @@ export default defineConfig({
     "prefer-spread": "error",
     "symbol-description": "error",
 
-    // From eslint-config-divid's core/style.js
+    // core/style.js
     "max-lines": ["error", { max: 800 }],
     "no-bitwise": "error",
     "no-lonely-if": "error",
@@ -116,10 +102,10 @@ export default defineConfig({
     "operator-assignment": ["error", "always"],
     "prefer-object-spread": "error",
 
-    // From eslint-config-divid's core/style.js
-    "no-underscore-dangle": "off", // Prefixing with underscore to signal private
+    // core/style.js
+    "no-underscore-dangle": "off", // underscore signals private
 
-    // From eslint-config-divid's core/variables.js
+    // core/variables.js
     "no-label-var": "error",
     "no-restricted-globals": [
       "error",
@@ -186,23 +172,21 @@ export default defineConfig({
       "top",
     ],
 
-    // From eslint-config-divid's core/node.js
+    // core/node.js
     "node/global-require": "error",
     "node/no-new-require": "error",
     "node/no-path-concat": "error",
 
-    // From eslint-config-divid's imports/*.js
+    // imports/*.js
     "import/no-mutable-exports": "error",
     "import/no-amd": "error",
     "import/no-webpack-loader-syntax": "error",
-    "import/no-cycle": "error", // no oxlint maxDepth option; unbounded by default
+    "import/no-cycle": "error", // no maxDepth option; unbounded by default
     "import/first": "error",
     "import/no-duplicates": "error",
     "import/newline-after-import": "error",
 
-    // From eslint-config-divid's typescript-eslint/all.js. Some of these ported to
-    // oxlint's plain "eslint" scope instead of "typescript/" because oxlint's base
-    // rule is already type-aware and has no separate typescript-plugin variant.
+    // typescript-eslint/all.js
     "typescript/adjacent-overload-signatures": "error",
     "typescript/array-type": ["error", { default: "generic" }],
     "typescript/ban-ts-comment": "error",
@@ -219,7 +203,7 @@ export default defineConfig({
     "typescript/explicit-module-boundary-types": "error",
     "init-declarations": "error",
     "no-array-constructor": "error",
-    "typescript/no-dynamic-delete": "off", // Not enforced by team decision
+    "typescript/no-dynamic-delete": "off", // team decision
     "typescript/no-explicit-any": "error",
     "typescript/no-invalid-void-type": "error",
     "no-loop-func": "error",
@@ -237,7 +221,7 @@ export default defineConfig({
     "typescript/no-unsafe-return": "error",
     "typescript/no-var-requires": "error",
     "typescript/prefer-enum-initializers": "error",
-    "typescript/prefer-for-of": "off", // Not enforced by team decision
+    "typescript/prefer-for-of": "off", // team decision
     "typescript/prefer-literal-enum-member": "error",
     "typescript/prefer-nullish-coalescing": "error",
     "typescript/prefer-optional-chain": "error",
@@ -250,11 +234,9 @@ export default defineConfig({
     "typescript/return-await": "error",
     "typescript/switch-exhaustiveness-check": "error",
     "typescript/unified-signatures": "error",
-    // Native equivalent of eslint-plugin-functional's prefer-property-signatures.
-    "typescript/method-signature-style": ["error", "property"],
+    "typescript/method-signature-style": ["error", "property"], // replaces prefer-property-signatures
 
-    // Ported from eslint-plugin-functional, see functional-plugin.js. No native oxlint
-    // equivalent exists for these (checked against `oxlint --rules --format json`).
+    // Ports of eslint-plugin-functional rules with no oxlint equivalent, see functional-plugin.js.
     "functional/no-classes": "error",
     "functional/no-let": ["error", { allowInFunctions: true, ignoreIdentifierPattern: "^[mM]utable" }],
     "functional/no-this-expressions": "error",
