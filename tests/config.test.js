@@ -106,8 +106,7 @@ describe("Validate oxlint config", () => {
         `  return a + b;`,
         `}`,
         ``,
-        `const result = add(1, 2);`,
-        `console.log(result);`,
+        `export const result = add(1, 2);`,
         ``,
       ].join("\n")
     );

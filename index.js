@@ -92,6 +92,7 @@ export default defineConfig({
     "no-prototype-builtins": "error",
     "no-regex-spaces": "error",
     "no-template-curly-in-string": "error",
+    "no-console": "error",
 
     // From eslint-config-divid's core/es6.js
     "no-useless-computed-key": "error",
@@ -214,7 +215,7 @@ export default defineConfig({
     "typescript/explicit-module-boundary-types": "error",
     "init-declarations": "error",
     "no-array-constructor": "error",
-    "typescript/no-dynamic-delete": "error",
+    "typescript/no-dynamic-delete": "off", // Not enforced by team decision
     "typescript/no-explicit-any": "error",
     "typescript/no-invalid-void-type": "error",
     "no-loop-func": "error",
@@ -232,7 +233,7 @@ export default defineConfig({
     "typescript/no-unsafe-return": "error",
     "typescript/no-var-requires": "error",
     "typescript/prefer-enum-initializers": "error",
-    "typescript/prefer-for-of": "error",
+    "typescript/prefer-for-of": "off", // Not enforced by team decision
     "typescript/prefer-literal-enum-member": "error",
     "typescript/prefer-nullish-coalescing": "error",
     "typescript/prefer-optional-chain": "error",
@@ -251,8 +252,8 @@ export default defineConfig({
     // Ported from eslint-plugin-functional, see functional-plugin.js. No native oxlint
     // equivalent exists for these (checked against `oxlint --rules --format json`).
     "functional/no-classes": "error",
-    "functional/no-let": "error",
+    "functional/no-let": ["error", { allowInFunctions: true, ignoreIdentifierPattern: "^[mM]utable" }],
     "functional/no-this-expressions": "error",
-    "functional/prefer-readonly-type": "error",
+    "functional/prefer-readonly-type": ["error", { allowLocalMutation: true, ignorePattern: "^[mM]utable" }],
   },
 });
