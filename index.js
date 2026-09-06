@@ -20,22 +20,27 @@ export default defineConfig({
   rules: {
     // oxlint's `categories` block above turns on every rule tagged correctness/suspicious,
     // ignoring eslint-config-divid's per-rule intent for these - so they need to be turned
-    // back off explicitly here to match. Two groups:
+    // back off explicitly here to match. Three groups:
     // (a) rules eslint-config-divid disables because TypeScript's compiler already checks
-    // them (core/errors.js, core/es6.js) - safe to disable since consuming projects run tsc.
+    // them unconditionally (core/errors.js, core/es6.js) - no tsconfig option required.
     "getter-return": "off", // Checked by Typescript - ts(2378)
     "no-dupe-keys": "off", // Checked by Typescript - ts(1117)
-    "no-unreachable": "off", // Checked by Typescript - ts(7027)
     "valid-typeof": "off", // Checked by Typescript - ts(2367)
     "no-const-assign": "off", // Checked by Typescript - ts(2588)
     "no-this-before-super": "off", // Checked by Typescript - ts(2376)
-    // (b) rules eslint-config-divid disables in favor of a type-aware
+    "no-dupe-class-members": "off", // Checked by Typescript - ts(2393)/ts(2300)
+    // (b) rules eslint-config-divid disables because TypeScript's compiler checks them too,
+    // but only when the consuming project turns on the matching tsconfig compiler option
+    // (see README) - off here on the assumption that projects enable it.
+    "no-unreachable": "off", // Checked by Typescript - ts(7027) - requires "allowUnreachableCode": false
+    "no-unused-vars": "off", // Checked by Typescript - ts(6133)/ts(6196) - requires "noUnusedLocals"/"noUnusedParameters": true
+    "no-fallthrough": "off", // Checked by Typescript - ts(7029) - requires "noFallthroughCasesInSwitch": true
+    // (c) rules eslint-config-divid disables in favor of a type-aware
     // @typescript-eslint/* variant (typescript-eslint/all.js) - oxlint has no equivalent
-    // typescript-scoped rule for these, so - same as eslint-plugin-functional - they're
-    // left out rather than enforced via the type-unaware bare rule.
-    "no-dupe-class-members": "off", // No oxlint equivalent of @typescript-eslint/no-dupe-class-members
+    // typescript-scoped rule for these, and TypeScript's compiler has no check for them
+    // either, so - same as eslint-plugin-functional - they're left out rather than
+    // enforced via the type-unaware bare rule.
     "no-shadow": "off", // No oxlint equivalent of @typescript-eslint/no-shadow
-    "no-unused-vars": "off", // No oxlint equivalent of @typescript-eslint/no-unused-vars
     "no-useless-constructor": "off", // No oxlint equivalent of @typescript-eslint/no-useless-constructor
     "no-empty-function": "off", // No oxlint equivalent of @typescript-eslint/no-empty-function
 
@@ -51,7 +56,6 @@ export default defineConfig({
     "no-case-declarations": "error",
     "no-div-regex": "error",
     "no-extra-label": "error",
-    "no-fallthrough": "error",
     "no-implicit-coercion": ["error", { boolean: false, number: false, string: true }], // !! is idiomatic JS
     "no-implicit-globals": "error",
     "no-labels": ["error", { allowLoop: false, allowSwitch: false }],

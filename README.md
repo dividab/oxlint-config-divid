@@ -62,6 +62,26 @@ export default defineConfig({
 });
 ```
 
+## Recommended tsconfig options
+
+Have these compiler options on in your project's `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "allowUnreachableCode": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true
+  }
+}
+```
+
 ## How to publish
 
 ```
