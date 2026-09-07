@@ -20,6 +20,17 @@ would produce unsound fixes. If a project only needs these rules from `eslint-pl
 can be dropped once this config is in use. Expect the rule set in `index.js` to grow as we find more
 oxlint (native or JS-plugin) equivalents worth enabling.
 
+Beyond the core `typescript`, `import`, `unicorn`, `oxc`, `node` and `react` plugins, this config
+also enables:
+
+- `jsx-a11y` - accessibility checks for JSX (e.g. requiring `alt` text, valid ARIA roles).
+- `react-perf` - common React performance footguns, like inline object/array/function literals
+  passed as props, which defeat memoization.
+- `promise` - correctness rules around `Promise` usage (e.g. returning inside `.then()`, not
+  swallowing rejections).
+- `vitest` - rules specific to Vitest test files (e.g. no disabled/focused tests left behind, no
+  standalone `expect()` outside a test).
+
 ## Usage
 
 Install the package and its peer dependency:

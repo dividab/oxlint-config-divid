@@ -3,7 +3,8 @@
   "compilerOptions": {
     "noEmit": false,
     "noEmitOnError": true,
-    "declaration": true
+    "declaration": true,
+    "outDir": "lib"
   },
   "include": ["index.ts", "functional-plugin.ts", "rules/**/*.ts"]
 }

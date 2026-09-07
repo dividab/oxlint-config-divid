@@ -27,7 +27,7 @@ beforeAll(async () => {
   await writeFile(
     path.join(mutableFixtureDir, "oxlint.config.js"),
     `import { defineConfig } from "oxlint";\nimport dividConfig from ${JSON.stringify(
-      path.join(rootDir, "..", "index.js")
+      path.join(rootDir, "..", "lib", "index.js")
     )};\n\nexport default defineConfig({ extends: [dividConfig] });\n`
   );
 });
@@ -60,7 +60,7 @@ async function lint(filename: string, source: string): Promise<{ readonly exitCo
 }
 
 describe("Validate oxlint config", () => {
-  it("loads index.js in oxlint without configuration errors", async () => {
+  it("loads lib/index.js in oxlint without configuration errors", async () => {
     await expect(printConfig()).resolves.not.toThrow();
   });
 

@@ -2,15 +2,11 @@
   "name": "oxlint-config-divid",
   "version": "1.2.1",
   "description": "Oxlint sharable config using typescript with the programming style we use at Divid",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "type": "module",
   "files": [
-    "index.js",
-    "index.d.ts",
-    "functional-plugin.js",
-    "functional-plugin.d.ts",
-    "rules"
+    "lib"
   ],
   "author": "Divid AB",
   "license": "MIT",
@@ -48,7 +44,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "cleanbuild": "rm -rf index.js index.d.ts functional-plugin.js functional-plugin.d.ts rules/*.js rules/*.d.ts && pnpm build",
+    "cleanbuild": "rm -rf lib && pnpm build",
     "clean-node-modules": "rm -rf node_modules",
     "typecheck": "tsc --noEmit",
     "pretest": "pnpm typecheck && pnpm build",

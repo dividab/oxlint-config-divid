@@ -5,12 +5,7 @@ node_modules
 .env
 
 # Build output (compiled from the .ts sources by `pnpm build`)
-/index.js
-/index.d.ts
-/functional-plugin.js
-/functional-plugin.d.ts
-/rules/*.js
-/rules/*.d.ts
+/lib
 
 # Per-developer editor settings (see README's "Editor setup" section)
 .vscode/settings.json

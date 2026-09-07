@@ -3,7 +3,7 @@ import { defineConfig } from "oxlint";
 export default defineConfig({
   plugins: ["typescript", "import", "unicorn", "oxc", "node", "react", "jsx-a11y", "react-perf", "promise", "vitest"],
   // Syntax-only ports of eslint-plugin-functional rules with no oxlint equivalent.
-  jsPlugins: ["oxlint-config-divid/functional-plugin.js"],
+  jsPlugins: ["oxlint-config-divid/lib/functional-plugin.js"],
   categories: {
     correctness: "error",
     suspicious: "error",
