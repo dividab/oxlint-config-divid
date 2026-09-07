@@ -1,6 +1,5 @@
-import { describe, it } from "vitest";
 import { RuleTester } from "oxlint/plugins-dev";
-
+import { describe, it } from "vitest";
 import noClasses from "../rules/no-classes.js";
 import noLet from "../rules/no-let.js";
 import noThisExpressions from "../rules/no-this-expressions.js";

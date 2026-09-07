@@ -9,6 +9,9 @@
   "semi": true,
   "arrowParens": "always",
   "bracketSameLine": false,
+  "sortPackageJson": true,
+  "sortImports": { "newlinesBetween": false },
   "bracketSpacing": true,
+  "jsdoc": true,
   "ignorePatterns": ["package.json"]
 }

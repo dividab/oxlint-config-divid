@@ -4,9 +4,7 @@ interface ThisExpression extends AstNode {
   readonly type: "ThisExpression";
 }
 
-/**
- * Port of eslint-plugin-functional's `no-this-expressions`: disallow use of `this`.
- */
+/** Port of eslint-plugin-functional's `no-this-expressions`: disallow use of `this`. */
 // Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
 // the plain public `Rule` shape, not the specific `ThisExpression` node type used internally below.
 const rule: Rule = {

@@ -15,9 +15,7 @@ interface NoClassesOptions {
   readonly ignoreCodePattern?: string | ReadonlyArray<string>;
 }
 
-/**
- * Port of eslint-plugin-functional's `no-classes`: disallow class declarations and expressions.
- */
+/** Port of eslint-plugin-functional's `no-classes`: disallow class declarations and expressions. */
 // Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
 // the plain public `Rule` shape, not the specific `ClassLike` node type used internally below.
 const rule: Rule = {

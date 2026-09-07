@@ -1,5 +1,5 @@
-import type { AstNode, Context, Rule } from "./_types.js";
 import { isInsideFunction } from "./_ast-utils.js";
+import type { AstNode, Context, Rule } from "./_types.js";
 
 interface Identifier extends AstNode {
   readonly type: "Identifier";
@@ -28,8 +28,8 @@ interface NoLetOptions {
 }
 
 /**
- * Port of eslint-plugin-functional's `no-let`: disallow `let` declarations, prefer `const`.
- * `var` is intentionally left alone here - the core `no-var` rule already covers it.
+ * Port of eslint-plugin-functional's `no-let`: disallow `let` declarations, prefer `const`. `var` is intentionally left alone here - the core
+ * `no-var` rule already covers it.
  */
 // Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
 // the plain public `Rule` shape, not the specific node types used internally below.

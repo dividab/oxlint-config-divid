@@ -1,7 +1,6 @@
 /**
- * oxlint's alpha JS-plugin API (https://oxc.rs/docs/guide/usage/linter/js-plugins.html) ships
- * `oxlint/plugins-dev` types, but that module only exports `RuleTester` - `Context`, `Rule` and the
- * AST node shapes rule authors actually need aren't exported. These are hand-rolled to match its
+ * Oxlint's alpha JS-plugin API (https://oxc.rs/docs/guide/usage/linter/js-plugins.html) ships `oxlint/plugins-dev` types, but that module only
+ * exports `RuleTester` - `Context`, `Rule` and the AST node shapes rule authors actually need aren't exported. These are hand-rolled to match its
  * documented runtime shape, scoped to exactly what this package's rules touch (not a full AST).
  */
 

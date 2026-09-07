@@ -1,5 +1,5 @@
-import type { AstNode, Context, Rule } from "./_types.js";
 import { getIdentifierText, isClassLike, isInClass, isInInterface, isInReturnType, isInsideFunction } from "./_ast-utils.js";
+import type { AstNode, Context, Rule } from "./_types.js";
 
 interface Identifier extends AstNode {
   readonly type: "Identifier";
@@ -91,15 +91,12 @@ function shouldIgnoreClasses(node: AstNode, ignoreClass: boolean | "fieldsOnly")
 }
 
 /**
- * Port of eslint-plugin-functional's `prefer-readonly-type`, narrowed to the checks that
- * translate cleanly to a syntax-only (non-type-aware) rule: readonly modifiers missing from
- * property/index signatures, class fields, constructor parameter properties and mapped types;
- * array/tuple types and `Array`/`Map`/`Set` type references not marked as readonly.
+ * Port of eslint-plugin-functional's `prefer-readonly-type`, narrowed to the checks that translate cleanly to a syntax-only (non-type-aware) rule:
+ * readonly modifiers missing from property/index signatures, class fields, constructor parameter properties and mapped types; array/tuple types and
+ * `Array`/`Map`/`Set` type references not marked as readonly.
  *
- * Not ported, since eslint-plugin-functional's own version of it needs type information (a
- * TypeScript program, via `getTypeOfNode`) that oxlint's JS-plugin API does not give rule authors
- * access to: `checkImplicit` (flagging an inferred-mutable array/tuple with no explicit type
- * annotation).
+ * Not ported, since eslint-plugin-functional's own version of it needs type information (a TypeScript program, via `getTypeOfNode`) that oxlint's
+ * JS-plugin API does not give rule authors access to: `checkImplicit` (flagging an inferred-mutable array/tuple with no explicit type annotation).
  */
 // Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
 // the plain public `Rule` shape, not the specific node types used internally below.
