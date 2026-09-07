@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat > *)",
+      "Bash(pnpm update-refs *)",
+      "Bash(pnpm build)",
+      "Bash(pnpm cleanbuild)",
+      "Bash(pnpm -r test)",
+      "Bash(pnpm fmt)",
+      "Bash(pnpm ci-format-check)",
+      "Bash(pnpm install)",
+      "Bash(pnpm clean-node-modules)",
+      "Bash(pnpm -r ci-test)",
+      "Bash(pnpm why *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(pnpm install *)",
+      "Bash(git log *)"
+    ],
+    "deny": [
+      "Read(.claude/settings.json)",
+      "Write(.claude/settings.json)",
+      "Read(apps/aircalc-promaster-plugins/docker-compose.yml)",
+      "Write(apps/aircalc-promaster-plugins/docker-compose.yml)",
+      "Read(apps/elligo-promaster-plugins/docker-compose.yml)",
+      "Write(apps/elligo-promaster-plugins/docker-compose.yml)",
+      "Read(libs/aircalc/aircalc-performance/src/performance-calculation/calculators/silencer/dllufttechnik/dllufttechnik.ts)",
+      "Write(libs/aircalc/aircalc-performance/src/performance-calculation/calculators/silencer/dllufttechnik/dllufttechnik.ts)",
+      "Read(scripts/review-apps/k8s-review-deploy.yaml)",
+      "Write(scripts/review-apps/k8s-review-deploy.yaml)"
+    ],
+    "additionalDirectories": ["/tmp"]
+  }
+}
