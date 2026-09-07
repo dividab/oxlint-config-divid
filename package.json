@@ -3,10 +3,13 @@
   "version": "1.2.1",
   "description": "Oxlint sharable config using typescript with the programming style we use at Divid",
   "main": "index.js",
+  "types": "index.d.ts",
   "type": "module",
   "files": [
     "index.js",
+    "index.d.ts",
     "functional-plugin.js",
+    "functional-plugin.d.ts",
     "rules"
   ],
   "author": "Divid AB",
@@ -33,17 +36,28 @@
     "typescript"
   ],
   "devDependencies": {
+    "@types/node": "^24.13.3",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.81.0",
+    "oxlint-config-divid": "link:.",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.0"
   },
   "peerDependencies": {
     "oxlint": ">=1.81.0"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "cleanbuild": "rm -rf index.js index.d.ts functional-plugin.js functional-plugin.d.ts rules/*.js rules/*.d.ts && pnpm build",
+    "clean-node-modules": "rm -rf node_modules",
+    "typecheck": "tsc --noEmit",
+    "pretest": "pnpm typecheck && pnpm build",
     "test": "vitest run",
     "fmt": "oxfmt --write .",
     "fmt:check": "oxfmt --check .",
+    "lint": "oxlint -c oxlint.config.js .",
+    "prelint": "pnpm build",
+    "prepack": "pnpm build",
     "preversion": "pnpm test",
     "postversion": "git push --tags && pnpm publish && git push && echo \"Successfully released version $npm_package_version!\""
   }

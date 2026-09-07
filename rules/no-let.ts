@@ -1,10 +1,39 @@
+import type { AstNode, Context, Rule } from "./_types.js";
+import { isInsideFunction } from "./_ast-utils.js";
+
+interface Identifier extends AstNode {
+  readonly type: "Identifier";
+  readonly name: string;
+}
+
+interface VariableDeclarator extends AstNode {
+  readonly id: AstNode;
+}
+
+interface VariableDeclaration extends AstNode {
+  readonly type: "VariableDeclaration";
+  readonly kind: "var" | "let" | "const" | "using" | "await using";
+  readonly declarations: ReadonlyArray<VariableDeclarator>;
+}
+
+interface ForStatement extends AstNode {
+  readonly type: "ForStatement";
+  readonly init: AstNode | null;
+}
+
+interface NoLetOptions {
+  readonly allowInForLoopInit?: boolean;
+  readonly allowInFunctions?: boolean;
+  readonly ignoreIdentifierPattern?: string | ReadonlyArray<string>;
+}
+
 /**
  * Port of eslint-plugin-functional's `no-let`: disallow `let` declarations, prefer `const`.
  * `var` is intentionally left alone here - the core `no-var` rule already covers it.
  */
-import { isInsideFunction } from "./_ast-utils.js";
-
-export default {
+// Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
+// the plain public `Rule` shape, not the specific node types used internally below.
+const rule: Rule = {
   meta: {
     type: "suggestion",
     docs: {
@@ -30,18 +59,19 @@ export default {
       },
     ],
   },
-  create(context) {
-    const { allowInForLoopInit = false, allowInFunctions = false, ignoreIdentifierPattern } = context.options[0] ?? {};
+  create(context: Context) {
+    const { allowInForLoopInit = false, allowInFunctions = false, ignoreIdentifierPattern } = (context.options[0] as NoLetOptions | undefined) ?? {};
     const patterns = (
       Array.isArray(ignoreIdentifierPattern) ? ignoreIdentifierPattern : ignoreIdentifierPattern ? [ignoreIdentifierPattern] : []
     ).map((source) => new RegExp(source));
 
     return {
-      VariableDeclaration(node) {
+      VariableDeclaration(node: VariableDeclaration) {
         if (node.kind !== "let") {
           return;
         }
-        if (allowInForLoopInit && node.parent.type === "ForStatement" && node.parent.init === node) {
+        const parent = node.parent;
+        if (allowInForLoopInit && parent !== null && parent.type === "ForStatement" && (parent as ForStatement).init === node) {
           return;
         }
         if (allowInFunctions && isInsideFunction(node)) {
@@ -49,7 +79,7 @@ export default {
         }
         if (
           patterns.length > 0 &&
-          node.declarations.every((decl) => decl.id.type === "Identifier" && patterns.some((pattern) => pattern.test(decl.id.name)))
+          node.declarations.every((decl) => decl.id.type === "Identifier" && patterns.some((pattern) => pattern.test((decl.id as Identifier).name)))
         ) {
           return;
         }
@@ -58,3 +88,5 @@ export default {
     };
   },
 };
+
+export default rule;

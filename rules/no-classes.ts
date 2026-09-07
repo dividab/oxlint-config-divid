@@ -1,7 +1,26 @@
+import type { AstNode, Context, Rule } from "./_types.js";
+
+interface Identifier extends AstNode {
+  readonly type: "Identifier";
+  readonly name: string;
+}
+
+interface ClassLike extends AstNode {
+  readonly type: "ClassDeclaration" | "ClassExpression";
+  readonly id: Identifier | null;
+}
+
+interface NoClassesOptions {
+  readonly ignoreIdentifierPattern?: string | ReadonlyArray<string>;
+  readonly ignoreCodePattern?: string | ReadonlyArray<string>;
+}
+
 /**
  * Port of eslint-plugin-functional's `no-classes`: disallow class declarations and expressions.
  */
-export default {
+// Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
+// the plain public `Rule` shape, not the specific `ClassLike` node type used internally below.
+const rule: Rule = {
   meta: {
     type: "suggestion",
     docs: {
@@ -30,8 +49,8 @@ export default {
       },
     ],
   },
-  create(context) {
-    const { ignoreIdentifierPattern, ignoreCodePattern } = context.options[0] ?? {};
+  create(context: Context) {
+    const { ignoreIdentifierPattern, ignoreCodePattern } = (context.options[0] as NoClassesOptions | undefined) ?? {};
     const identifierPatterns = (
       Array.isArray(ignoreIdentifierPattern) ? ignoreIdentifierPattern : ignoreIdentifierPattern ? [ignoreIdentifierPattern] : []
     ).map((source) => new RegExp(source));
@@ -39,14 +58,15 @@ export default {
       (source) => new RegExp(source)
     );
 
-    function isIgnored(node) {
+    function isIgnored(node: ClassLike): boolean {
+      const { id } = node;
       return (
-        (node.id !== null && identifierPatterns.some((pattern) => pattern.test(node.id.name))) ||
-        (codePatterns.length > 0 && codePatterns.some((pattern) => pattern.test(context.sourceCode.getText(node))))
+        (id !== null && identifierPatterns.some((pattern) => pattern.test(id.name))) ||
+        codePatterns.some((pattern) => pattern.test(context.sourceCode.getText(node)))
       );
     }
 
-    function check(node) {
+    function check(node: ClassLike): void {
       if (!isIgnored(node)) {
         context.report({ node, messageId: "noClass" });
       }
@@ -58,3 +78,5 @@ export default {
     };
   },
 };
+
+export default rule;

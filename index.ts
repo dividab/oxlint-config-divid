@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["typescript", "import", "unicorn", "oxc", "node", "react"],
+  plugins: ["typescript", "import", "unicorn", "oxc", "node", "react", "jsx-a11y", "react-perf", "promise", "vitest"],
   // Syntax-only ports of eslint-plugin-functional rules with no oxlint equivalent.
   jsPlugins: ["oxlint-config-divid/functional-plugin.js"],
   categories: {
@@ -236,13 +236,19 @@ export default defineConfig({
     "typescript/unified-signatures": "error",
     "typescript/method-signature-style": ["error", "property"], // replaces prefer-property-signatures
 
-    // Ports of eslint-plugin-functional rules with no oxlint equivalent, see functional-plugin.js.
+    // Ports of eslint-plugin-functional rules with no oxlint equivalent, see functional-plugin.ts.
     "functional/no-classes": "error",
     "functional/no-let": ["error", { allowInFunctions: true, ignoreIdentifierPattern: "^[mM]utable" }],
     "functional/no-this-expressions": "error",
     "functional/prefer-readonly-type": ["error", { allowLocalMutation: true, ignorePattern: "^[mM]utable" }],
 
     // react/* - not in the correctness/suspicious categories, so needs an explicit entry.
-    "react/no-array-index-key": "error",
+    "react/no-array-index-key": "off", // too many false positives on genuinely static lists
+
+    // react-perf/* - "perf" category, not in the correctness/suspicious categories used above.
+    "react-perf/jsx-no-jsx-as-prop": "error",
+    "react-perf/jsx-no-new-array-as-prop": "error",
+    "react-perf/jsx-no-new-function-as-prop": "error",
+    "react-perf/jsx-no-new-object-as-prop": "error",
   },
 });

@@ -22,6 +22,8 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm fmt:check
+          pnpm typecheck
+          pnpm run lint
           pnpm test
         env:
           CI: true

@@ -1,3 +1,95 @@
+import type { AstNode, Context, Rule } from "./_types.js";
+import { getIdentifierText, isClassLike, isInClass, isInInterface, isInReturnType, isInsideFunction } from "./_ast-utils.js";
+
+interface Identifier extends AstNode {
+  readonly type: "Identifier";
+  readonly name: string;
+}
+
+interface TSTypeOperator extends AstNode {
+  readonly type: "TSTypeOperator";
+  readonly operator: "keyof" | "unique" | "readonly";
+}
+
+interface ReadonlyCheckable extends AstNode {
+  readonly readonly?: boolean;
+}
+
+interface PropertyDefinitionNode extends ReadonlyCheckable {
+  readonly key: AstNode;
+}
+
+interface TSParameterPropertyNode extends ReadonlyCheckable {
+  readonly parameter: AstNode;
+}
+
+interface TSMappedTypeNode extends AstNode {
+  readonly readonly?: true | "+" | "-";
+}
+
+interface TSTypeReferenceNode extends AstNode {
+  readonly typeName: AstNode;
+}
+
+interface PreferReadonlyTypeOptions {
+  readonly ignoreInterface?: boolean;
+  readonly allowLocalMutation?: boolean;
+  readonly allowMutableReturnType?: boolean;
+  readonly ignoreCollections?: boolean;
+  readonly ignoreClass?: boolean | "fieldsOnly";
+  readonly ignorePattern?: string | ReadonlyArray<string>;
+}
+
+const MUTABLE_TO_READONLY_TYPES = new Map([
+  ["Array", "ReadonlyArray"],
+  ["Map", "ReadonlyMap"],
+  ["Set", "ReadonlySet"],
+]);
+const COLLECTION_TYPE_NAMES = new Set(MUTABLE_TO_READONLY_TYPES.keys());
+
+function isReadonlyWrapped(node: AstNode): boolean {
+  return node.parent !== null && node.parent.type === "TSTypeOperator" && (node.parent as TSTypeOperator).operator === "readonly";
+}
+
+function isNestedArrayOrTuple(node: AstNode): boolean {
+  return node.parent !== null && (node.parent.type === "TSArrayType" || node.parent.type === "TSTupleType");
+}
+
+// Walk up past the type-only wrapper nodes surrounding a checked node to find the nearest node
+// that actually carries a name - a property, variable, parameter, function or type alias -
+// mirroring eslint-plugin-functional's own unwrapping (`shouldIgnorePattern2`) before testing
+// ignorePattern against it.
+const TYPE_WRAPPER_TYPES = new Set(["TSArrayType", "TSTupleType", "TSTypeAnnotation", "TSTypeReference", "TSIndexSignature", "TSTypeLiteral"]);
+
+function getIdentifierName(node: AstNode): string | undefined {
+  let current: AstNode | null = node;
+  while (current !== null && TYPE_WRAPPER_TYPES.has(current.type)) {
+    current = current.parent;
+  }
+  return getIdentifierText(current);
+}
+
+function matchesIgnorePattern(node: AstNode, patterns: ReadonlyArray<RegExp>): boolean {
+  if (patterns.length === 0) {
+    return false;
+  }
+  const name = getIdentifierName(node);
+  return name !== undefined && patterns.some((pattern) => pattern.test(name));
+}
+
+// Mirrors eslint-plugin-functional's `shouldIgnoreClasses`. The `this.x = ...` assignment-
+// expression variant of the "fieldsOnly" case is omitted: this rule never visits
+// AssignmentExpression nodes, so it can never apply.
+function shouldIgnoreClasses(node: AstNode, ignoreClass: boolean | "fieldsOnly"): boolean {
+  if (ignoreClass === true) {
+    return isClassLike(node) || isInClass(node);
+  }
+  if (ignoreClass === "fieldsOnly") {
+    return node.type === "PropertyDefinition";
+  }
+  return false;
+}
+
 /**
  * Port of eslint-plugin-functional's `prefer-readonly-type`, narrowed to the checks that
  * translate cleanly to a syntax-only (non-type-aware) rule: readonly modifiers missing from
@@ -9,59 +101,9 @@
  * access to: `checkImplicit` (flagging an inferred-mutable array/tuple with no explicit type
  * annotation).
  */
-import { getIdentifierText, isClassLike, isInClass, isInInterface, isInReturnType, isInsideFunction } from "./_ast-utils.js";
-
-const MUTABLE_TO_READONLY_TYPES = new Map([
-  ["Array", "ReadonlyArray"],
-  ["Map", "ReadonlyMap"],
-  ["Set", "ReadonlySet"],
-]);
-const COLLECTION_TYPE_NAMES = new Set(MUTABLE_TO_READONLY_TYPES.keys());
-
-function isReadonlyWrapped(node) {
-  return node.parent.type === "TSTypeOperator" && node.parent.operator === "readonly";
-}
-
-function isNestedArrayOrTuple(node) {
-  return node.parent.type === "TSArrayType" || node.parent.type === "TSTupleType";
-}
-
-// Walk up past the type-only wrapper nodes surrounding a checked node to find the nearest node
-// that actually carries a name - a property, variable, parameter, function or type alias -
-// mirroring eslint-plugin-functional's own unwrapping (`shouldIgnorePattern2`) before testing
-// ignorePattern against it.
-const TYPE_WRAPPER_TYPES = new Set(["TSArrayType", "TSTupleType", "TSTypeAnnotation", "TSTypeReference", "TSIndexSignature", "TSTypeLiteral"]);
-
-function getIdentifierName(node) {
-  let current = node;
-  while (current !== null && current !== undefined && TYPE_WRAPPER_TYPES.has(current.type)) {
-    current = current.parent;
-  }
-  return getIdentifierText(current);
-}
-
-function matchesIgnorePattern(node, patterns) {
-  if (patterns.length === 0) {
-    return false;
-  }
-  const name = getIdentifierName(node);
-  return name !== undefined && patterns.some((pattern) => pattern.test(name));
-}
-
-// Mirrors eslint-plugin-functional's `shouldIgnoreClasses`. The `this.x = ...` assignment-
-// expression variant of the "fieldsOnly" case is omitted: this rule never visits
-// AssignmentExpression nodes, so it can never apply.
-function shouldIgnoreClasses(node, ignoreClass) {
-  if (ignoreClass === true) {
-    return isClassLike(node) || isInClass(node);
-  }
-  if (ignoreClass === "fieldsOnly") {
-    return node.type === "PropertyDefinition";
-  }
-  return false;
-}
-
-export default {
+// Typed as `Rule` (not `satisfies Rule`) so the exported binding's declaration-emitted type stays
+// the plain public `Rule` shape, not the specific node types used internally below.
+const rule: Rule = {
   meta: {
     type: "suggestion",
     fixable: "code",
@@ -96,7 +138,7 @@ export default {
       },
     ],
   },
-  create(context) {
+  create(context: Context) {
     const {
       ignoreInterface = false,
       allowLocalMutation = false,
@@ -104,10 +146,10 @@ export default {
       ignoreCollections = false,
       ignoreClass = false,
       ignorePattern,
-    } = context.options[0] ?? {};
+    } = (context.options[0] as PreferReadonlyTypeOptions | undefined) ?? {};
     const patterns = (Array.isArray(ignorePattern) ? ignorePattern : ignorePattern ? [ignorePattern] : []).map((source) => new RegExp(source));
 
-    function isIgnored(node) {
+    function isIgnored(node: AstNode): boolean {
       return (
         shouldIgnoreClasses(node, ignoreClass) ||
         (ignoreInterface && isInInterface(node)) ||
@@ -116,11 +158,11 @@ export default {
       );
     }
 
-    function isIgnoredReturnType(node) {
+    function isIgnoredReturnType(node: AstNode): boolean {
       return allowMutableReturnType && isInReturnType(node);
     }
 
-    function checkReadonlyProperty(node, messageId, fixTarget) {
+    function checkReadonlyProperty(node: ReadonlyCheckable, messageId: string, fixTarget?: AstNode): void {
       if (node.readonly) {
         return;
       }
@@ -135,25 +177,25 @@ export default {
     }
 
     return {
-      TSPropertySignature(node) {
+      TSPropertySignature(node: ReadonlyCheckable) {
         checkReadonlyProperty(node, "propertyNotReadonly");
       },
 
-      TSIndexSignature(node) {
+      TSIndexSignature(node: ReadonlyCheckable) {
         checkReadonlyProperty(node, "propertyNotReadonly");
       },
 
-      PropertyDefinition(node) {
+      PropertyDefinition(node: PropertyDefinitionNode) {
         checkReadonlyProperty(node, "propertyNotReadonly", node.key);
       },
 
-      TSParameterProperty(node) {
+      TSParameterProperty(node: TSParameterPropertyNode) {
         checkReadonlyProperty(node, "propertyNotReadonly", node.parameter);
       },
 
       // No allowMutableReturnType/ignoreClass/ignoreCollections handling here: eslint-plugin-
       // functional's checkMappedType doesn't apply them either.
-      TSMappedType(node) {
+      TSMappedType(node: TSMappedTypeNode) {
         if (node.readonly === true || node.readonly === "+") {
           return;
         }
@@ -167,7 +209,7 @@ export default {
         });
       },
 
-      TSArrayType(node) {
+      TSArrayType(node: AstNode) {
         if (isReadonlyWrapped(node) || isNestedArrayOrTuple(node) || ignoreCollections) {
           return;
         }
@@ -181,7 +223,7 @@ export default {
         });
       },
 
-      TSTupleType(node) {
+      TSTupleType(node: AstNode) {
         if (isReadonlyWrapped(node) || isNestedArrayOrTuple(node) || ignoreCollections) {
           return;
         }
@@ -195,8 +237,8 @@ export default {
         });
       },
 
-      TSTypeReference(node) {
-        if (node.typeName.type !== "Identifier" || !COLLECTION_TYPE_NAMES.has(node.typeName.name)) {
+      TSTypeReference(node: TSTypeReferenceNode) {
+        if (node.typeName.type !== "Identifier" || !COLLECTION_TYPE_NAMES.has((node.typeName as Identifier).name)) {
           return;
         }
         if (ignoreCollections) {
@@ -205,12 +247,19 @@ export default {
         if (isIgnored(node) || isIgnoredReturnType(node)) {
           return;
         }
+        const typeName = node.typeName as Identifier;
+        const replacement = MUTABLE_TO_READONLY_TYPES.get(typeName.name);
+        if (replacement === undefined) {
+          return;
+        }
         context.report({
           node,
           messageId: "typeNotReadonly",
-          fix: (fixer) => fixer.replaceText(node.typeName, MUTABLE_TO_READONLY_TYPES.get(node.typeName.name)),
+          fix: (fixer) => fixer.replaceText(typeName, replacement),
         });
       },
     };
   },
 };
+
+export default rule;

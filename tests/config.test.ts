@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, type ExecFileException } from "node:child_process";
 import { mkdtemp, mkdir, readdir, writeFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -9,22 +9,23 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 const execFileAsync = promisify(execFile);
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
-let fixtureDir;
+let mutableFixtureDir: string = "";
 
 beforeAll(async () => {
-  fixtureDir = await mkdtemp(path.join(tmpdir(), "oxlint-config-divid-"));
+  mutableFixtureDir = await mkdtemp(path.join(tmpdir(), "oxlint-config-divid-"));
   // oxlint.config.js does `import { defineConfig } from "oxlint"`, which Node resolves
   // relative to the config file's own location, so the fixture needs its own node_modules.
-  await mkdir(path.join(fixtureDir, "node_modules"));
-  for (const entry of await readdir(path.join(rootDir, "..", "node_modules"))) {
-    await symlink(path.join(rootDir, "..", "node_modules", entry), path.join(fixtureDir, "node_modules", entry), "dir");
-  }
+  await mkdir(path.join(mutableFixtureDir, "node_modules"));
   // The plugin's `jsPlugins` entry is a bare package specifier ("oxlint-config-divid/..."), the
-  // same way a real consumer's node_modules would resolve it - so the fixture needs a
-  // self-reference too, since this package isn't (and shouldn't be) a dependency of itself.
-  await symlink(path.join(rootDir, ".."), path.join(fixtureDir, "node_modules", "oxlint-config-divid"), "dir");
+  // same way a real consumer's node_modules would resolve it - this package's own "oxlint-config-
+  // divid": "link:." devDependency (used for the self-lint config at the repo root) already makes
+  // node_modules/oxlint-config-divid a self-referencing symlink, so copying the whole node_modules
+  // below carries that self-reference into the fixture too.
+  for (const entry of await readdir(path.join(rootDir, "..", "node_modules"))) {
+    await symlink(path.join(rootDir, "..", "node_modules", entry), path.join(mutableFixtureDir, "node_modules", entry), "dir");
+  }
   await writeFile(
-    path.join(fixtureDir, "oxlint.config.js"),
+    path.join(mutableFixtureDir, "oxlint.config.js"),
     `import { defineConfig } from "oxlint";\nimport dividConfig from ${JSON.stringify(
       path.join(rootDir, "..", "index.js")
     )};\n\nexport default defineConfig({ extends: [dividConfig] });\n`
@@ -32,28 +33,29 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await rm(fixtureDir, { recursive: true, force: true });
+  await rm(mutableFixtureDir, { recursive: true, force: true });
 });
 
-async function printConfig() {
+async function printConfig(): Promise<Record<string, unknown> & { readonly rules: Record<string, string> }> {
   // oxlint only auto-discovers `.oxlintrc.json`; a JS/TS config must be passed via -c
   // explicitly, otherwise it silently falls back to oxlint's built-in default config.
   const { stdout } = await execFileAsync("npx", ["oxlint", "-c", "oxlint.config.js", "--print-config", "."], {
-    cwd: fixtureDir,
+    cwd: mutableFixtureDir,
   });
-  return JSON.parse(stdout);
+  return JSON.parse(stdout) as Record<string, unknown> & { readonly rules: Record<string, string> };
 }
 
-async function lint(filename, source) {
-  await writeFile(path.join(fixtureDir, filename), source);
+async function lint(filename: string, source: string): Promise<{ readonly exitCode: string | number | null; readonly output: string }> {
+  await writeFile(path.join(mutableFixtureDir, filename), source);
   try {
     // `-f json` keeps this parseable regardless of the human-readable summary banner oxlint
     // prints on some environments (e.g. it's suppressed when it detects it's running under an
     // AI agent, which made a plain-text empty-output check pass locally but fail in CI).
-    const { stdout } = await execFileAsync("npx", ["oxlint", "-c", "oxlint.config.js", "-f", "json", filename], { cwd: fixtureDir });
+    const { stdout } = await execFileAsync("npx", ["oxlint", "-c", "oxlint.config.js", "-f", "json", filename], { cwd: mutableFixtureDir });
     return { exitCode: 0, output: stdout };
   } catch (error) {
-    return { exitCode: error.code, output: error.stdout };
+    const execError = error as ExecFileException & { stdout: string };
+    return { exitCode: execError.code ?? null, output: execError.stdout };
   }
 }
 

@@ -77,8 +77,24 @@ Have these compiler options on in your project's `tsconfig.json`:
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": true
   }
+}
+```
+
+## Editor setup (VSCode)
+
+`.vscode/settings.json` is per-developer (gitignored), so add these yourself. They enable
+oxlint's type-aware rules and point the [oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
+at this repo's config, so in-editor lint results match `pnpm lint`, and format-on-save uses
+oxfmt (sorting imports and `package.json` along the way):
+
+```json
+{
+  "oxc.typeAware": true,
+  "oxc.configPath": "./oxlint.config.js",
+  "editor.formatOnSave": true
 }
 ```
 

@@ -18,7 +18,11 @@ const tester = new RuleTester();
 // prefer-readonly-type are intentionally omitted: that check needs a TypeScript program
 // (`getTypeOfNode`) that oxlint's JS-plugin API doesn't give rule authors access to.
 
-tester.run("no-let", noLet, {
+// `RuleTester.run`'s `rule` parameter is typed against oxlint's own internal (unexported) AST node
+// types, which this package's rules deliberately don't depend on (see rules/_types.ts) - so each
+// rule needs an `as never` here at this one boundary between our precise local types and oxlint's
+// opaque runtime API.
+tester.run("no-let", noLet as never, {
   valid: [
     "const x = 1;",
 
@@ -167,7 +171,7 @@ tester.run("no-let", noLet, {
   ],
 });
 
-tester.run("no-classes", noClasses, {
+tester.run("no-classes", noClasses as never, {
   valid: [
     "function Foo() {}",
     { code: "class Foo {}", options: [{ ignoreIdentifierPattern: "^Foo$" }] },
@@ -189,12 +193,12 @@ tester.run("no-classes", noClasses, {
   ],
 });
 
-tester.run("no-this-expressions", noThisExpressions, {
+tester.run("no-this-expressions", noThisExpressions as never, {
   valid: ["function foo() { bar(); }"],
   invalid: [{ code: "function foo() { this.bar(); }", errors: [{ messageId: "noThis" }] }],
 });
 
-tester.run("prefer-readonly-type", preferReadonlyType, {
+tester.run("prefer-readonly-type", preferReadonlyType as never, {
   valid: [
     // basics
     "interface Foo { readonly a: number, readonly b: ReadonlyArray<string>, readonly c: () => string, readonly d: { readonly [key: string]: string }, readonly [key: string]: string, }",
