@@ -1,6 +1,6 @@
 {
   "name": "oxlint-config-divid",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Oxlint sharable config using typescript with the programming style we use at Divid",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
