@@ -256,5 +256,6 @@ export default defineConfig({
     "unicorn/no-useless-spread": "error",
     "unicorn/no-useless-fallback-in-spread": "error",
     "typescript/no-misused-spread": "error",
+    "unicorn/no-new-array": "error",
   },
 });
