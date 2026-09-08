@@ -3,6 +3,7 @@
     "allow": [
       "Bash(cat > *)",
       "Bash(pnpm install *)",
+      "Bash(pnpm update *)",
       "Bash(pnpm build*)",
       "Bash(pnpm cleanbuild)",
       "Bash(pnpm clean-node-modules)",
@@ -32,7 +33,10 @@
       "Bash(echo *)",
       "Bash(xargs *)"
     ],
-    "deny": ["Read(.claude/settings.json)", "Write(.claude/settings.json)"],
+    "deny": [
+      "Read(.claude/settings.json)",
+      "Write(.claude/settings.json)"
+    ],
     "additionalDirectories": ["/tmp"]
   }
 }
