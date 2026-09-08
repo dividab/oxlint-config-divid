@@ -115,9 +115,9 @@ The npm account has 2FA enabled, so publishing needs a one-time code from your a
 passed as the last argument:
 
 ```
-pnpm patch <otp>
-pnpm minor <otp>
-pnpm major <otp>
+pnpm release:patch <otp>
+pnpm release:minor <otp>
+pnpm release:major <otp>
 ```
 
 This runs the tests, bumps the version, commits and tags it, pushes, then publishes to npm with
