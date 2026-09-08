@@ -252,5 +252,7 @@ export default defineConfig({
     "react-perf/jsx-no-new-object-as-prop": "error",
 
     "vitest/valid-title": "off", // -- works poorly for test.name as test title.
+
+    "unicorn/no-useless-spread": "error",
   },
 });
