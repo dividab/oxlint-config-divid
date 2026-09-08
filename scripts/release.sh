@@ -2,8 +2,11 @@
 set -euo pipefail
 
 bump="$1"
-otp="${2:?Usage: pnpm ${1:-patch} <otp>}"
 
-pnpm version "$bump"
+if [ "$bump" != "publish-only" ]; then
+  pnpm version "$bump"
+fi
+
+read -r -p "npm OTP: " otp < /dev/tty
 pnpm publish --otp="$otp"
 echo "Successfully released version $(node -p "require('./package.json').version")!"

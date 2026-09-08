@@ -54,10 +54,11 @@
     "lint": "oxlint -c oxlint.config.js .",
     "prelint": "pnpm build",
     "prepack": "pnpm build",
-    "preversion": "pnpm test",
+    "preversion": "pnpm fmt:check && pnpm lint && pnpm test",
     "postversion": "git push --tags && git push",
     "release:patch": "scripts/release.sh patch",
     "release:minor": "scripts/release.sh minor",
-    "release:major": "scripts/release.sh major"
+    "release:major": "scripts/release.sh major",
+    "release:publish-only": "scripts/release.sh publish-only"
   }
 }
