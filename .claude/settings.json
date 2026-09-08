@@ -32,10 +32,7 @@
       "Bash(echo *)",
       "Bash(xargs *)"
     ],
-    "deny": [
-      "Read(.claude/settings.json)",
-      "Write(.claude/settings.json)"
-    ],
+    "deny": ["Read(.claude/settings.json)", "Write(.claude/settings.json)"],
     "additionalDirectories": ["/tmp"]
   }
 }
