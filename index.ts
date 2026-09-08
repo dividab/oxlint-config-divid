@@ -251,6 +251,6 @@ export default defineConfig({
     "react-perf/jsx-no-new-function-as-prop": "error",
     "react-perf/jsx-no-new-object-as-prop": "error",
 
-    "vitest/valid-title": ["error", { allowArguments: true }],
+    "vitest/valid-title": "off", // -- works poorly for test.name as test title.
   },
 });

@@ -111,17 +111,14 @@ oxfmt (sorting imports and `package.json` along the way):
 
 ## How to publish
 
-```
-pnpm version patch
-pnpm version minor
-pnpm version major
-```
-
-This runs the tests, bumps the version, commits and tags it, then pushes and publishes to npm.
-The npm account has 2FA enabled, so the automatic `pnpm publish` step in `postversion` will fail
-with a 404/EOTP error. If that happens, finish the release manually:
+The npm account has 2FA enabled, so publishing needs a one-time code from your authenticator app,
+passed as the last argument:
 
 ```
-npm publish --otp=<code from your authenticator app>
-git push
+pnpm patch <otp>
+pnpm minor <otp>
+pnpm major <otp>
 ```
+
+This runs the tests, bumps the version, commits and tags it, pushes, then publishes to npm with
+the given OTP.
