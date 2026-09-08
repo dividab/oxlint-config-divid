@@ -254,5 +254,6 @@ export default defineConfig({
     "vitest/valid-title": "off", // -- works poorly for test.name as test title.
 
     "unicorn/no-useless-spread": "error",
+    "unicorn/no-useless-fallback-in-spread": "error",
   },
 });
