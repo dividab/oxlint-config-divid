@@ -257,5 +257,6 @@ export default defineConfig({
     "unicorn/no-useless-fallback-in-spread": "error",
     "typescript/no-misused-spread": "error",
     "unicorn/no-new-array": "error",
+    "unicorn/no-array-sort": "off", // team decision - copy-then-sort via a preceding transform is already allocation-optimal; toSorted() after it would add a second copy
   },
 });
