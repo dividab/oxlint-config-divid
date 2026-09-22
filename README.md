@@ -111,19 +111,13 @@ oxfmt (sorting imports and `package.json` along the way):
 
 ## How to publish
 
-The npm account has 2FA enabled, so publishing needs a one-time code from your authenticator app:
-
 ```
 pnpm release:patch
 pnpm release:minor
 pnpm release:major
 ```
 
-This runs the tests, bumps the version, commits and tags it, pushes, then prompts for the OTP
-right before publishing to npm (so the code doesn't go stale while tests/build run first).
-
-If the version was already bumped, committed and pushed but publishing itself failed (e.g. a
-stale/rejected OTP), finish the release without bumping again:
+If that fails after the version was already bumped, retry with:
 
 ```
 pnpm release:publish-only
