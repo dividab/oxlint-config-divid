@@ -10,7 +10,7 @@
   ],
   "author": "Divid AB",
   "license": "MIT",
-  "packageManager": "pnpm@12.3.1",
+  "packageManager": "pnpm@12.8.2",
   "engines": {
     "node": ">=24.0.0",
     "npm": "please-use-pnpm",
